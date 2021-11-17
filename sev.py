@@ -1,3 +1,4 @@
+import subprocess
 import time
 import board
 import adafruit_dht
@@ -47,6 +48,11 @@ while True:
     except Exception as error:
         dhtDevice.exit()
         raise error
+
+    if ( humidity > 70 ):
+        subprocess.run(["usbrelay", "-q", "QAAMZ_3=1"])
+    if ( humidity <= 70 ):
+        subprocess.run(["usbrelay", "-q", "QAAMZ_3=0"])
 
     time.sleep(2.0)
 
