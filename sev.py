@@ -3,12 +3,14 @@ import time
 import board
 import adafruit_dht
 import I2C_LCD_driver
-
+import json
 import sys
 sys.path.insert(0, './lib_oled96')
 from lib_oled96 import ssd1306
 from smbus import SMBus
 from PIL import ImageFont
+from datetime import datetime
+from influxdb import InfluxDBClient
 
 dhtDevice = adafruit_dht.DHT11(board.D4, use_pulseio=False)
 lcd = I2C_LCD_driver.lcd()
@@ -19,6 +21,27 @@ draw = oled.canvas
 FreeSans20 = ImageFont.truetype('./lib_oled96/FreeSans.ttf', 20)
 FreeSans12 = ImageFont.truetype('./lib_oled96/FreeSans.ttf', 12)
 
+
+db = InfluxDBClient('localhost', 8086, '', '', 'zalat')
+db.create_retention_policy("sensor", 'INF', 3, default=True)
+
+def insertData(temp, humid):
+    ts = (datetime.now() - datetime(1970, 1, 1)).total_seconds() 
+    now = datetime.utcnow()
+    utc = ("Updated", now.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+    influx = [
+            { "measurement": "sensor",
+                "tags": { "id": 1},
+                "time": utc[1],
+                "fields": {
+                 "temperature": temp,
+                 "humidity": humid,
+                 "timestamp": ts
+                }
+             }
+            ]
+    db.write_points(influx, retention_policy="sensor")
 
 
 while True:
@@ -48,6 +71,8 @@ while True:
     except Exception as error:
         dhtDevice.exit()
         raise error
+
+    insertData(temperature_c, humidity)
 
     if ( humidity > 70 ):
         subprocess.run(["usbrelay", "-q", "QAAMZ_3=1"])
