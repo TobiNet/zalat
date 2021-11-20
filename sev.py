@@ -9,7 +9,7 @@ sys.path.insert(0, './lib_oled96')
 from lib_oled96 import ssd1306
 from smbus import SMBus
 from PIL import ImageFont
-from datetime import datetime
+from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 dhtDevice = adafruit_dht.DHT11(board.D4, use_pulseio=False)
@@ -43,6 +43,9 @@ def insertData(temp, humid):
             ]
     db.write_points(influx, retention_policy="sensor")
 
+database_insert = datetime.utcnow() + timedelta(days = -1)
+ventilator_triggered = datetime.utcnow() + timedelta(days = -1)
+relay = False
 
 while True:
     try:
@@ -72,12 +75,21 @@ while True:
         dhtDevice.exit()
         raise error
 
-    insertData(temperature_c, humidity)
+    if (database_insert < (datetime.utcnow() + timedelta(minutes = -30))):
+        database_insert = datetime.utcnow()
+        insertData(temperature_c, humidity)
+        print("DB insert at " + datetime.utcnow().strftime('%H:%M:%S'))
 
-    if ( humidity > 70 ):
-        subprocess.run(["usbrelay", "QAAMZ_3=1"])
-    if ( humidity <= 70 ):
-        subprocess.run(["usbrelay", "QAAMZ_3=0"])
+    #if ( temperature_c < 20 ):
+    if (relay == False and humidity > 80 and ventilator_triggered < (datetime.utcnow() + timedelta (minutes = -60))):
+        subprocess.run(["usbrelay", "/dev/hidraw0_3=1"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        ventilator_triggered = datetime.utcnow()
+        relay = True
+        print ("relay on " + ventilator_triggered.strftime('%H:%M:%S'))
+    if ( relay == True and ventilator_triggered < (datetime.utcnow() + timedelta (minutes = -20)) ):
+        print ("relay off " + datetime.utcnow().strftime('%H:%M:%S'))
+        subprocess.run(["usbrelay", "/dev/hidraw0_3=0"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        relay = False
 
     time.sleep(2.0)
 
