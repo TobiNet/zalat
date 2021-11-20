@@ -2,7 +2,6 @@ import subprocess
 import time
 import board
 import adafruit_dht
-import I2C_LCD_driver
 import json
 import sys
 sys.path.insert(0, './lib_oled96')
@@ -13,7 +12,6 @@ from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 dhtDevice = adafruit_dht.DHT11(board.D4, use_pulseio=False)
-lcd = I2C_LCD_driver.lcd()
 
 i2cbus = SMBus(1)
 oled = ssd1306(i2cbus)
@@ -57,11 +55,7 @@ while True:
                 temperature_c, humidity
             )
         )
-        lcd.lcd_clear()
-        lcd.lcd_display_string("Zevs Becksalat", 1)
-        lcd.lcd_display_string("{:.1f} C {}%".format(temperature_c, humidity), 2)
         oled.cls()
-        oled.display()
         draw.text((1, 1), "Zevs Beckzalat", font=FreeSans12, fill=1)
         draw.text((10, 30), "{:.1f}°C {}%".format(temperature_c, humidity), font=FreeSans20, fill=1)
         oled.display()
