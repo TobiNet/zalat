@@ -77,7 +77,7 @@ while True:
     if ( humidity > 70 ):
         subprocess.run(["usbrelay", "-q", "QAAMZ_3=1"])
     if ( humidity <= 70 ):
-        subprocess.run(["usbrelay", "-q", "QAAMZ_3=0"])
+        subprocess.run(["usbrelay", "QAAMZ_3=0"])
 
     time.sleep(2.0)
 
