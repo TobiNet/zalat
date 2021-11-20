@@ -22,8 +22,9 @@ FreeSans12 = ImageFont.truetype('./lib_oled96/FreeSans.ttf', 12)
 
 db = InfluxDBClient('localhost', 8086, '', '', 'zalat')
 db.create_retention_policy("sensor", 'INF', 3, default=True)
+relay = False
 
-def insertData(temp, humid):
+def insertData(temp, humid, state):
     ts = (datetime.now() - datetime(1970, 1, 1)).total_seconds() 
     now = datetime.utcnow()
     utc = ("Updated", now.strftime("%Y-%m-%dT%H:%M:%SZ"))
@@ -35,15 +36,16 @@ def insertData(temp, humid):
                 "fields": {
                  "temperature": temp,
                  "humidity": humid,
-                 "timestamp": ts
+                 "timestamp": ts,
+                 "relay": int(state == True)
                 }
              }
             ]
+    print (influx)
     db.write_points(influx, retention_policy="sensor")
 
 database_insert = datetime.utcnow() + timedelta(days = -1)
 ventilator_triggered = datetime.utcnow() + timedelta(days = -1)
-relay = False
 
 while True:
     try:
@@ -71,7 +73,7 @@ while True:
 
     if (database_insert < (datetime.utcnow() + timedelta(minutes = -30))):
         database_insert = datetime.utcnow()
-        insertData(temperature_c, humidity)
+        insertData(temperature_c, humidity, relay)
         print("DB insert at " + datetime.utcnow().strftime('%H:%M:%S'))
 
     #if ( temperature_c < 20 ):
