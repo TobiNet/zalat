@@ -1,0 +1,17 @@
+[Unit]
+Description=Zalat service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/pi/sev/start.sh
+ExecStop=/bin/bash /home/pi/sev/stop.sh
+Restart=always
+RestartSec=5
+TimeoutSec=60
+RuntimeMaxSec=infinity
+PIDFile=/tmp/zalat.pid
+User=pi
+
+[Install]
+WantedBy=multi-user.target

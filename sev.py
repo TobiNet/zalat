@@ -1,10 +1,11 @@
+# coding=utf-8
 import subprocess
 import time
 import board
 import adafruit_dht
 import json
 import sys
-sys.path.insert(0, './lib_oled96')
+sys.path.insert(0, '/home/pi/sev/lib_oled96')
 from lib_oled96 import ssd1306
 from smbus import SMBus
 from PIL import ImageFont
@@ -16,8 +17,8 @@ dhtDevice = adafruit_dht.DHT11(board.D4, use_pulseio=False)
 i2cbus = SMBus(1)
 oled = ssd1306(i2cbus)
 draw = oled.canvas
-FreeSans20 = ImageFont.truetype('./lib_oled96/FreeSans.ttf', 20)
-FreeSans12 = ImageFont.truetype('./lib_oled96/FreeSans.ttf', 12)
+FreeSans20 = ImageFont.truetype('/home/pi/sev/lib_oled96/FreeSans.ttf', 20)
+FreeSans12 = ImageFont.truetype('/home/pi/sev/lib_oled96/FreeSans.ttf', 12)
 
 
 db = InfluxDBClient('localhost', 8086, '', '', 'zalat')
