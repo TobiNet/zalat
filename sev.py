@@ -75,7 +75,7 @@ while True:
     insertData(temperature_c, humidity)
 
     if ( humidity > 70 ):
-        subprocess.run(["usbrelay", "-q", "QAAMZ_3=1"])
+        subprocess.run(["usbrelay", "QAAMZ_3=1"])
     if ( humidity <= 70 ):
         subprocess.run(["usbrelay", "QAAMZ_3=0"])
 
